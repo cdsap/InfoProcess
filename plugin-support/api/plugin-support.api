@@ -1,0 +1,82 @@
+public final class io/github/cdsap/pluginsupport/BooleanOptIn {
+	public static final field INSTANCE Lio/github/cdsap/pluginsupport/BooleanOptIn;
+	public final fun convention (Lorg/gradle/api/provider/Property;Lorg/gradle/api/provider/ProviderFactory;Ljava/lang/String;Lorg/gradle/api/provider/Provider;)V
+	public final fun convention (Lorg/gradle/api/provider/Property;Lorg/gradle/api/provider/ProviderFactory;Ljava/lang/String;Z)V
+	public final fun gradleProperty (Lorg/gradle/api/provider/ProviderFactory;Ljava/lang/String;)Lorg/gradle/api/provider/Provider;
+}
+
+public abstract interface class io/github/cdsap/pluginsupport/BuildScanReporter : java/io/Serializable {
+	public abstract fun report (Lio/github/cdsap/pluginsupport/BuildScanSink;)V
+}
+
+public abstract interface class io/github/cdsap/pluginsupport/BuildScanSink {
+	public abstract fun tag (Ljava/lang/String;)V
+	public abstract fun value (Ljava/lang/String;Ljava/lang/String;)V
+}
+
+public abstract class io/github/cdsap/pluginsupport/ConsoleReportService : java/lang/AutoCloseable, org/gradle/api/services/BuildService, org/gradle/tooling/events/OperationCompletionListener {
+	public fun <init> ()V
+	public final fun close ()V
+	public fun onFinish (Lorg/gradle/tooling/events/FinishEvent;)V
+	protected abstract fun report ()V
+}
+
+public abstract interface class io/github/cdsap/pluginsupport/ConsoleReportService$Parameters : org/gradle/api/services/BuildServiceParameters {
+	public abstract fun getConsoleEnabled ()Lorg/gradle/api/provider/Property;
+}
+
+public abstract class io/github/cdsap/pluginsupport/DetectedDevelocity {
+	public abstract fun getAccess ()Lio/github/cdsap/pluginsupport/DevelocityAccess;
+	public abstract fun onBuildFinished (Lio/github/cdsap/pluginsupport/BuildScanReporter;)V
+}
+
+public final class io/github/cdsap/pluginsupport/DevelocityAccess {
+	public static final field Companion Lio/github/cdsap/pluginsupport/DevelocityAccess$Companion;
+	public static final field DEVELOCITY Lio/github/cdsap/pluginsupport/DevelocityAccess;
+	public static final field DEVELOCITY_ISOLATED Lio/github/cdsap/pluginsupport/DevelocityAccess;
+	public static final field GRADLE_ENTERPRISE Lio/github/cdsap/pluginsupport/DevelocityAccess;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getKeepsConsole ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/cdsap/pluginsupport/DevelocityAccess$Companion {
+}
+
+public final class io/github/cdsap/pluginsupport/DevelocityBridge {
+	public static final field INSTANCE Lio/github/cdsap/pluginsupport/DevelocityBridge;
+	public final fun detect (Lorg/gradle/api/Project;Z)Lio/github/cdsap/pluginsupport/DetectedDevelocity;
+	public final fun detect (Lorg/gradle/api/initialization/Settings;ZLio/github/cdsap/pluginsupport/DevelocityDetectedAction;)V
+}
+
+public abstract interface class io/github/cdsap/pluginsupport/DevelocityDetectedAction {
+	public abstract fun execute (Lorg/gradle/api/Project;Lio/github/cdsap/pluginsupport/DetectedDevelocity;)V
+}
+
+public final class io/github/cdsap/pluginsupport/PluginEntry {
+	public static final field INSTANCE Lio/github/cdsap/pluginsupport/PluginEntry;
+	public final fun apply (Ljava/lang/Object;Lorg/gradle/build/event/BuildEventsListenerRegistry;Lio/github/cdsap/pluginsupport/ReportingPluginSpec;)V
+}
+
+public final class io/github/cdsap/pluginsupport/PluginSupportVersion {
+	public static final field INSTANCE Lio/github/cdsap/pluginsupport/PluginSupportVersion;
+	public final fun getLoaded ()Ljava/lang/String;
+	public final fun requireCompatible (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+}
+
+public abstract class io/github/cdsap/pluginsupport/ReportingPluginSpec {
+	public fun <init> ()V
+	public fun applyToProject (Lorg/gradle/api/Project;)V
+	public fun applyToSettings (Lorg/gradle/api/initialization/Settings;)V
+	public abstract fun buildScanReporter (Lorg/gradle/api/Project;Lio/github/cdsap/pluginsupport/DevelocityAccess;)Lio/github/cdsap/pluginsupport/BuildScanReporter;
+	public abstract fun configureConsoleService (Lorg/gradle/api/Project;Lio/github/cdsap/pluginsupport/ConsoleReportService$Parameters;)V
+	public abstract fun consoleAlongsideDevelocity (Lorg/gradle/api/Project;)Lorg/gradle/api/provider/Provider;
+	public abstract fun getConsoleServiceType ()Ljava/lang/Class;
+	public fun getLegacyGradleEnterprise ()Z
+	public abstract fun getMaxLibraryVersionExclusive ()Ljava/lang/String;
+	public abstract fun getMinLibraryVersion ()Ljava/lang/String;
+	public abstract fun getPluginId ()Ljava/lang/String;
+	public abstract fun getServiceName ()Ljava/lang/String;
+}
+

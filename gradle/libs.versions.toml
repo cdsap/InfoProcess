@@ -2,11 +2,16 @@
 kotlin = "2.4.20"
 junit = "4.13.2"
 mavenPublish = "0.37.0"
+develocityAdapters = "1.2.1"
+# Test-only: the last line that ships both DevelocityConfiguration and the legacy GradleEnterpriseExtension API.
+develocityTestApi = "3.19.2"
 
 [libraries]
 junit = { module = "junit:junit", version.ref = "junit" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 mavenPublish-gradlePlugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "mavenPublish" }
+develocity-adapters = { module = "com.gradle:develocity-gradle-plugin-adapters", version.ref = "develocityAdapters" }
+develocity-testApi = { module = "com.gradle:develocity-gradle-plugin", version.ref = "develocityTestApi" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
