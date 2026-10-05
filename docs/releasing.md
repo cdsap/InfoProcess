@@ -32,6 +32,37 @@ Maven Central versions are immutable; publish a new version when a released
 artifact needs correction. All shared library modules are released together
 with the same version.
 
+## build-observability-core 0.0.7
+
+`jvm-process-report` depends on `io.github.cdsap:build-observability-core:0.0.7`,
+the first core version with the `GbosDevelocity` publisher. Until 0.0.7 is on
+Maven Central, the build cannot resolve it: every build that configures
+`:jvm-process-report` dependencies (including `./gradlew check` locally and in
+CI) fails with "Could not find io.github.cdsap:build-observability-core:0.0.7".
+
+For local work, point the `gbosCoreBuild` Gradle property at a checkout of
+[build-observability-schema](https://github.com/cdsap/build-observability-schema)
+that contains the publisher. `settings.gradle.kts` then includes that build and
+substitutes its `:core` project for the Maven Central module:
+
+```bash
+./gradlew check -PgbosCoreBuild=../build-observability-schema
+```
+
+To avoid passing it on every invocation, set it outside the repository, for
+example `gbosCoreBuild=/path/to/build-observability-schema` in
+`~/.gradle/gradle.properties`. Never commit the property to this repository's
+`gradle.properties`: CI and releases must resolve the published core.
+
+Release order:
+
+1. Release build-observability-core 0.0.7 to Maven Central and wait until it
+   resolves from Central (`--refresh-dependencies`, no `-PgbosCoreBuild`).
+2. Only then can CI build without the property, and only then may the shared
+   libraries be released: their POMs reference core 0.0.7, so a shared-library
+   release before core 0.0.7 is on Central would publish unresolvable artifacts.
+   Run the release-preparation `./gradlew check` without `-PgbosCoreBuild`.
+
 ## ABI dumps
 
 Each shared library module commits its public ABI in `<module>/api/`. `check`
@@ -49,6 +80,9 @@ removed or changed declarations are breaking changes.
 ## Release process
 
 1. Prepare a dedicated release-preparation change:
+   - Confirm every external dependency of the libraries resolves from Maven
+     Central, in particular build-observability-core 0.0.7 (see above). Do not
+     set `gbosCoreBuild` for any release step.
    - Set `sharedLibsVersion` in `gradle.properties` to the release version, for
      example `0.1.0` (drop `-SNAPSHOT`).
    - Run `./gradlew updateKotlinAbi` and confirm no `api/` file changes; any
