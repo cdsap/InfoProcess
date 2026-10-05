@@ -54,6 +54,19 @@ public abstract interface class io/github/cdsap/pluginsupport/DevelocityDetected
 	public abstract fun execute (Lorg/gradle/api/Project;Lio/github/cdsap/pluginsupport/DetectedDevelocity;)V
 }
 
+public final class io/github/cdsap/pluginsupport/PluginApplication {
+	public static final field Companion Lio/github/cdsap/pluginsupport/PluginApplication$Companion;
+	public static final field ROOT_PROJECT Lio/github/cdsap/pluginsupport/PluginApplication;
+	public static final field SETTINGS Lio/github/cdsap/pluginsupport/PluginApplication;
+	public static final field SUBPROJECT Lio/github/cdsap/pluginsupport/PluginApplication;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/cdsap/pluginsupport/PluginApplication$Companion {
+}
+
 public final class io/github/cdsap/pluginsupport/PluginEntry {
 	public static final field INSTANCE Lio/github/cdsap/pluginsupport/PluginEntry;
 	public final fun apply (Ljava/lang/Object;Lorg/gradle/build/event/BuildEventsListenerRegistry;Lio/github/cdsap/pluginsupport/ReportingPluginSpec;)V
@@ -69,14 +82,19 @@ public abstract class io/github/cdsap/pluginsupport/ReportingPluginSpec {
 	public fun <init> ()V
 	public fun applyToProject (Lorg/gradle/api/Project;)V
 	public fun applyToSettings (Lorg/gradle/api/initialization/Settings;)V
+	public fun applyToSettings (Lorg/gradle/api/initialization/Settings;Lorg/gradle/api/provider/Provider;)V
 	public abstract fun buildScanReporter (Lorg/gradle/api/Project;Lio/github/cdsap/pluginsupport/DevelocityAccess;)Lio/github/cdsap/pluginsupport/BuildScanReporter;
-	public abstract fun configureConsoleService (Lorg/gradle/api/Project;Lio/github/cdsap/pluginsupport/ConsoleReportService$Parameters;)V
-	public abstract fun consoleAlongsideDevelocity (Lorg/gradle/api/Project;)Lorg/gradle/api/provider/Provider;
+	public fun configureConsoleService (Lorg/gradle/api/Project;Lio/github/cdsap/pluginsupport/ConsoleReportService$Parameters;)V
+	public fun configureConsoleService (Lorg/gradle/api/Project;Lio/github/cdsap/pluginsupport/ConsoleReportService$Parameters;Lio/github/cdsap/pluginsupport/DevelocityAccess;)V
+	public fun consoleAlongsideDevelocity (Lorg/gradle/api/Project;)Lorg/gradle/api/provider/Provider;
+	public fun consoleAlongsideDevelocity (Lorg/gradle/api/Project;Lio/github/cdsap/pluginsupport/PluginApplication;)Lorg/gradle/api/provider/Provider;
 	public abstract fun getConsoleServiceType ()Ljava/lang/Class;
 	public fun getLegacyGradleEnterprise ()Z
 	public abstract fun getMaxLibraryVersionExclusive ()Ljava/lang/String;
 	public abstract fun getMinLibraryVersion ()Ljava/lang/String;
 	public abstract fun getPluginId ()Ljava/lang/String;
 	public abstract fun getServiceName ()Ljava/lang/String;
+	public fun getSubscribeToTaskCompletion ()Z
+	public fun onConfigured (Lorg/gradle/api/Project;Lorg/gradle/api/provider/Provider;Lio/github/cdsap/pluginsupport/DevelocityAccess;)V
 }
 

@@ -1,5 +1,6 @@
 package io.github.cdsap.processreport
 
+import io.github.cdsap.plugintest.PluginUnderTest
 import io.github.cdsap.processreport.ProcessReportTest.Companion.GBOS_HEADER_KEYS
 import io.github.cdsap.processreport.ProcessReportTest.Companion.GBOS_HEADER_VALUES
 import io.github.cdsap.processreport.ProcessReportTest.Companion.IGP_G1_CONSOLE_TABLE
@@ -135,11 +136,36 @@ abstract class ProcessReportTestKitTest(private val gradleVersion: String) {
         assertFalse(consoleTables(reuse).isEmpty())
     }
 
-    private fun writeProject(spec: String) {
+    @Test
+    fun `when develocity replaces the console the jdk tools only run for the build scan`() {
+        writeProject(spec = "gradle", develocity = true)
+        val bin = installTools("GradleDaemon", "KotlinCompileDaemon", FakeJdkTools.G1_DAEMON)
+
+        val result = run(pathWith(bin), "help", classpath = fakeDevelocityClasspath())
+
+        assertEquals(IGP_G1_SCAN_VALUES, scanLines(result), result.output)
+        assertEquals(emptyList(), consoleTables(result), result.output)
+        assertEquals(listOf("jinfo 12345", "jstat 12345"), FakeJdkTools.calls(bin).sorted(), result.output)
+    }
+
+    @Test
+    fun `when the console prints next to develocity the jdk tools run for both`() {
+        writeProject(spec = "gradle", develocity = true)
+        val bin = installTools("GradleDaemon", "KotlinCompileDaemon", FakeJdkTools.G1_DAEMON)
+
+        val result = run(pathWith(bin), "help", "-PprocessReportFixture.consoleWithDevelocity=true", classpath = fakeDevelocityClasspath())
+
+        assertEquals(IGP_G1_SCAN_VALUES, scanLines(result), result.output)
+        assertEquals(listOf(IGP_G1_CONSOLE_TABLE), consoleTables(result), result.output)
+        assertEquals(listOf("jinfo 12345", "jinfo 12345", "jstat 12345", "jstat 12345"), FakeJdkTools.calls(bin).sorted(), result.output)
+    }
+
+    private fun writeProject(spec: String, develocity: Boolean = false) {
         File(projectDir, "gradle.properties").writeText("processReportFixture.spec=$spec\n")
         File(projectDir, "settings.gradle").writeText(
             """
             plugins {
+                ${if (develocity) "id 'com.gradle.develocity'" else ""}
                 id 'io.github.cdsap.processreport.fixture'
             }
             rootProject.name = 'process-report-fixture'
@@ -149,16 +175,23 @@ abstract class ProcessReportTestKitTest(private val gradleVersion: String) {
     }
 
     /** A `PATH` with the fake tools first. */
-    private fun tools(processName: String, otherProcessName: String, vararg daemons: FakeDaemon): String {
-        val bin = FakeJdkTools.install(File(toolsDir, "bin-${System.nanoTime()}"), processName, otherProcessName, daemons.toList())
-        return "${bin.absolutePath}${File.pathSeparator}${System.getenv("PATH")}"
-    }
+    private fun tools(processName: String, otherProcessName: String, vararg daemons: FakeDaemon): String =
+        pathWith(installTools(processName, otherProcessName, *daemons))
 
-    private fun run(path: String, vararg arguments: String): BuildResult =
+    private fun installTools(processName: String, otherProcessName: String, vararg daemons: FakeDaemon): File =
+        FakeJdkTools.install(File(toolsDir, "bin-${System.nanoTime()}"), processName, otherProcessName, daemons.toList())
+
+    private fun pathWith(bin: File) = "${bin.absolutePath}${File.pathSeparator}${System.getenv("PATH")}"
+
+    private fun testKitClasspath(): List<File> = System.getProperty("processReport.testKitClasspath").split(File.pathSeparator).map(::File)
+
+    private fun fakeDevelocityClasspath(): List<File> = PluginUnderTest.withFakeDevelocity(File(toolsDir, "develocity-api"), testKitClasspath())
+
+    private fun run(path: String, vararg arguments: String, classpath: List<File> = testKitClasspath()): BuildResult =
         GradleRunner.create()
             .withGradleVersion(gradleVersion)
             .withProjectDir(projectDir)
-            .withPluginClasspath(System.getProperty("processReport.testKitClasspath").split(File.pathSeparator).map(::File))
+            .withPluginClasspath(classpath)
             .withEnvironment(System.getenv() + ("PATH" to path))
             .withArguments(arguments.toList() + "--stacktrace")
             .build()

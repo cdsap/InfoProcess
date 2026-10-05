@@ -11,8 +11,15 @@ and JUnit 5 suites can both use it.
   and check that the first run stored a configuration cache entry and the second reused it.
 - `FakeDevelocityPlugin` and `FakeGradleEnterprisePlugin` are offline fakes of the Develocity and legacy Gradle
   Enterprise plugins. They print `SCAN-VALUE <name>=<value>` and `SCAN-TAG <tag>` lines, run `buildFinished` actions
-  at the end of the build (also on configuration cache reuse), and add their extension to the root project.
-  `FakeDevelocity.scanValues(output)` and `scanTags(output)` read the lines back.
+  at the end of the build (also on configuration cache reuse, and with Isolated Projects on Gradle 8.8 and later), and
+  add their extension to the root project. `FakeDevelocity.scanValues(output)` and `scanTags(output)` read the lines
+  back. Set the Gradle property `plugintest.fakeDevelocity.quiet=true` (`FakeDevelocity.QUIET_PROPERTY`) to drop
+  their "applied" line from the output.
+- `PluginUnderTest.classpath()` reads the plugin-under-test classpath that `withPluginClasspath()` uses.
+  `PluginUnderTest.withFakeDevelocity(dir)` returns it with this library's jar and the Develocity API jar first and any
+  real Develocity or Gradle Enterprise plugin jar removed, ready for `withPluginClasspath(...)`.
+- `PluginSupportJar.replaceIn(classpath, version, dir)` and `reversioned(jar, version, dir)` write plugin-support
+  copies that report another version, for testing a plugin's `PluginSupportVersion.requireCompatible` call.
 
 ## Dependencies
 
@@ -39,8 +46,8 @@ Pass `FakeDevelocity.develocityApiJar(dir)` to one of these:
   `SettingsScript.fakeDevelocity(version, apiJar)` and `plugin(FakeDevelocity.PLUGIN_ID)`. A `pluginManagement`
   resolution rule maps `com.gradle.develocity` and `com.gradle.enterprise` to this library, and the API jar goes on
   the settings classpath.
-- **`GradleRunner.withPluginClasspath`.** Put this library's classes and resources and the API jar on the injected
-  classpath, then request `id 'com.gradle.develocity'` without a version.
+- **`GradleRunner.withPluginClasspath`.** Pass `PluginUnderTest.withFakeDevelocity(dir)`, then request
+  `id 'com.gradle.develocity'` without a version.
 - **Develocity injected by an init script**, which the plugins under test cannot see:
   `FakeDevelocity.writeInitScript(file, apiJar)`, then run with `--init-script`.
 

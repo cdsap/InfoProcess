@@ -12,6 +12,9 @@ InfoKotlinProcess use it, each with its own spec:
   table and the Build Scan values (`<keyPrefix>-<pid>-{max,usage,capacity,uptime,gcTime,gcType}`, or the GBOS
   projection through `build-observability-core`'s `GbosDevelocity.publish` when the plugin's opt-in is on).
 - `ProcessConsoleService` and `ProcessReport.buildScanReporter` plug those into `plugin-support`'s `PluginEntry`.
+  Configure the service with `ProcessReport.configureConsoleService`: Gradle reads service parameters whenever it
+  creates the service, so it gates the `jps`/`jstat`/`jinfo` providers on the console policy. When Develocity replaces
+  the console table, the tools then run once, for the Build Scan values; they run twice only when both outputs print.
 
 It is released in lockstep with `plugin-support` under the same version, so the plugin's
 `PluginSupportVersion.requireCompatible` call covers both libraries. Call it first in `apply`:
@@ -47,9 +50,7 @@ class KotlinProcessSpec : ReportingPluginSpec<ProcessConsoleService.Params>() {
     override val consoleServiceType = ProcessConsoleService::class.java
 
     override fun configureConsoleService(rootProject: Project, parameters: ProcessConsoleService.Params) {
-        parameters.spec.set(KOTLIN_PROCESSES)
-        parameters.jStat.set(ProcessReport.jStat(rootProject.providers, KOTLIN_PROCESSES))
-        parameters.jInfo.set(ProcessReport.jInfo(rootProject.providers, KOTLIN_PROCESSES))
+        ProcessReport.configureConsoleService(parameters, rootProject.providers, KOTLIN_PROCESSES)
     }
 
     // InfoKotlinProcess prints no console table when Develocity reports the values.

@@ -17,9 +17,7 @@ import org.gradle.api.provider.ProviderFactory
  *     override val consoleServiceType = ProcessConsoleService::class.java
  *
  *     override fun configureConsoleService(rootProject: Project, parameters: ProcessConsoleService.Params) {
- *         parameters.spec.set(SPEC)
- *         parameters.jStat.set(ProcessReport.jStat(rootProject.providers, SPEC))
- *         parameters.jInfo.set(ProcessReport.jInfo(rootProject.providers, SPEC))
+ *         ProcessReport.configureConsoleService(parameters, rootProject.providers, SPEC)
  *     }
  *
  *     override fun buildScanReporter(rootProject: Project, access: DevelocityAccess) =
@@ -47,6 +45,26 @@ public object ProcessReport {
     /** Lazily runs `jps` and `jinfo` for every daemon named [ProcessReportSpec.processName]; "" as for [jStat]. */
     public fun jInfo(providers: ProviderFactory, spec: ProcessReportSpec): Provider<String> =
         JdkToolCommands.provider(providers, JdkToolCommands.jInfo(spec.processName))
+
+    /**
+     * Sets [ProcessConsoleService.Params] for [spec], for `ReportingPluginSpec.configureConsoleService`. The `jps`,
+     * `jstat` and `jinfo` providers are gated on [ProcessConsoleService.Params.consoleEnabled]: Gradle reads service
+     * parameters when it creates the service, also when Develocity replaces the console report, and the Build Scan
+     * reporter runs the tools itself.
+     */
+    public fun configureConsoleService(
+        parameters: ProcessConsoleService.Params,
+        providers: ProviderFactory,
+        spec: ProcessReportSpec,
+    ) {
+        val consoleEnabled = parameters.consoleEnabled.orElse(true)
+        val none = providers.provider { "" }
+        val jStat = jStat(providers, spec)
+        val jInfo = jInfo(providers, spec)
+        parameters.spec.set(spec)
+        parameters.jStat.set(consoleEnabled.flatMap { if (it) jStat else none })
+        parameters.jInfo.set(consoleEnabled.flatMap { if (it) jInfo else none })
+    }
 
     /**
      * Parses [jStat] and [jInfo] output into one [Process] per daemon, in `jstat` order, each typed

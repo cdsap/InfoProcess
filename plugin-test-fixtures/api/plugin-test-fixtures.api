@@ -27,6 +27,7 @@ public final class io/github/cdsap/plugintest/FakeDevelocity {
 	public static final field LEGACY_APPLIED_MARKER Ljava/lang/String;
 	public static final field LEGACY_PLUGIN_ID Ljava/lang/String;
 	public static final field PLUGIN_ID Ljava/lang/String;
+	public static final field QUIET_PROPERTY Ljava/lang/String;
 	public static final field SCAN_TAG_PREFIX Ljava/lang/String;
 	public static final field SCAN_VALUE_PREFIX Ljava/lang/String;
 	public final fun develocityApiJar (Ljava/io/File;)Ljava/io/File;
@@ -51,6 +52,26 @@ public final class io/github/cdsap/plugintest/IsolatedProjects {
 	public static final field INSTANCE Lio/github/cdsap/plugintest/IsolatedProjects;
 	public static final field PROPERTY Ljava/lang/String;
 	public final fun storeAndReuse (Lorg/gradle/testkit/runner/GradleRunner;[Ljava/lang/String;)Lio/github/cdsap/plugintest/ConfigurationCacheRuns;
+}
+
+public final class io/github/cdsap/plugintest/PluginSupportJar {
+	public static final field INSTANCE Lio/github/cdsap/plugintest/PluginSupportJar;
+	public static final field VERSION_RESOURCE Ljava/lang/String;
+	public final fun isPluginSupportJar (Ljava/io/File;)Z
+	public final fun replaceIn (Ljava/util/List;Ljava/lang/String;Ljava/io/File;)Ljava/util/List;
+	public final fun reversioned (Ljava/io/File;Ljava/lang/String;Ljava/io/File;)Ljava/io/File;
+}
+
+public final class io/github/cdsap/plugintest/PluginUnderTest {
+	public static final field INSTANCE Lio/github/cdsap/plugintest/PluginUnderTest;
+	public static final field METADATA_RESOURCE Ljava/lang/String;
+	public final fun classpath ()Ljava/util/List;
+	public final fun classpath (Ljava/lang/ClassLoader;)Ljava/util/List;
+	public static synthetic fun classpath$default (Lio/github/cdsap/plugintest/PluginUnderTest;Ljava/lang/ClassLoader;ILjava/lang/Object;)Ljava/util/List;
+	public final fun isRealDevelocityPlugin (Ljava/io/File;)Z
+	public final fun withFakeDevelocity (Ljava/io/File;)Ljava/util/List;
+	public final fun withFakeDevelocity (Ljava/io/File;Ljava/util/List;)Ljava/util/List;
+	public static synthetic fun withFakeDevelocity$default (Lio/github/cdsap/plugintest/PluginUnderTest;Ljava/io/File;Ljava/util/List;ILjava/lang/Object;)Ljava/util/List;
 }
 
 public final class io/github/cdsap/plugintest/SettingsScript {

@@ -63,10 +63,17 @@ object FakeJdkTools {
                 appendLine("echo '777 Jps'")
             },
         )
-        script(File(binDir, "jstat"), caseOnPid("\$3", daemons) { "${it.jStatHeader}\n${it.jStatData}" })
-        script(File(binDir, "jinfo"), caseOnPid("\$1", daemons) { "VM Flags:\n${it.jInfoFlags}" })
+        script(File(binDir, "jstat"), logCall("jstat \$3") + caseOnPid("\$3", daemons) { "${it.jStatHeader}\n${it.jStatData}" })
+        script(File(binDir, "jinfo"), logCall("jinfo \$1") + caseOnPid("\$1", daemons) { "VM Flags:\n${it.jInfoFlags}" })
         return binDir
     }
+
+    /** The `jstat <pid>` and `jinfo <pid>` calls made through [binDir], in order. */
+    fun calls(binDir: File): List<String> = File(binDir, CALLS_LOG).takeIf { it.isFile }?.readLines().orEmpty()
+
+    private const val CALLS_LOG = "calls.log"
+
+    private fun logCall(call: String) = "echo \"$call\" >> \"\$(dirname \"\$0\")/$CALLS_LOG\"\n"
 
     private fun caseOnPid(pidArgument: String, daemons: List<FakeDaemon>, output: (FakeDaemon) -> String): String =
         buildString {

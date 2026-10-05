@@ -32,6 +32,21 @@ library version was loaded. `PluginEntry.apply` repeats the check.
 version compiled against, up to the next major), the service name, the console service, and the Build Scan reporter.
 For the full example and rules, see the KDoc on `PluginEntry` and `PluginSupportVersion`.
 
+Pass a new spec to every `PluginEntry.apply` call. All hooks of one application run on that instance, so a spec can
+keep state between hooks, such as the extension it created in `applyToSettings`. `ReportingPluginSpec` documents the
+hook order. The optional hooks all have defaults:
+
+- `applyToSettings(settings, develocityPresent)` gets a provider that becomes true once Develocity is found, after the
+  settings script. Use it for lazy conventions.
+- `configureConsoleService(rootProject, parameters, develocity)` also gets how Develocity was found, or null.
+- `consoleAlongsideDevelocity(rootProject, application)` also gets where the configuring application was applied
+  (`PluginApplication.SETTINGS`, `ROOT_PROJECT` or `SUBPROJECT`). Use it when a subproject application used to miss
+  Develocity, so its users must keep the console report.
+- `subscribeToTaskCompletion = false` leaves the console service unsubscribed, for a service that only tasks declaring
+  it with `usesService` start.
+- `onConfigured(rootProject, service, develocity)` runs once per build after registration, for example to wire tasks
+  to the service.
+
 Version comparison ignores qualifiers: `1.2.0-SNAPSHOT` is treated as `1.2.0`.
 
 Public ABI changes must be recorded with `./gradlew :plugin-support:updateKotlinAbi`. For releases, see

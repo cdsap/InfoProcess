@@ -46,12 +46,13 @@ import org.gradle.build.event.BuildEventsListenerRegistry
  * 3. Configures once per build, from the root project: from `gradle.rootProject {}` registered from settings (no
  *    `gradle.lifecycle`, which needs Gradle 8.8), or from the root project when applied to any project.
  *
- * Configuring registers the console service under [ReportingPluginSpec.serviceName] and subscribes it to the
- * injected [BuildEventsListenerRegistry]; when the registration already exists nothing else happens, so the Build
- * Scan reporter and console are wired once whichever path ran first. There is no static state, so every build in a
- * daemon configures again. When Develocity is found the reporter from [ReportingPluginSpec.buildScanReporter] runs
- * from `buildScan.buildFinished`; the console prints unless Develocity was found through
- * [DevelocityAccess.DEVELOCITY] and [ReportingPluginSpec.consoleAlongsideDevelocity] is false.
+ * Configuring registers the console service under [ReportingPluginSpec.serviceName] and, unless
+ * [ReportingPluginSpec.subscribeToTaskCompletion] is false, subscribes it to the injected
+ * [BuildEventsListenerRegistry]; when the registration already exists nothing else happens, so the Build Scan
+ * reporter and console are wired once whichever path ran first. There is no static state, so every build in a daemon
+ * configures again. When Develocity is found the reporter from [ReportingPluginSpec.buildScanReporter] runs from
+ * `buildScan.buildFinished`; the console prints unless Develocity was found through [DevelocityAccess.DEVELOCITY]
+ * and [ReportingPluginSpec.consoleAlongsideDevelocity] is false. [ReportingPluginSpec] lists the hook order.
  */
 public object PluginEntry {
     public fun <P : ConsoleReportService.Parameters> apply(
@@ -62,16 +63,21 @@ public object PluginEntry {
         PluginSupportVersion.requireCompatible(spec.pluginId, spec.minLibraryVersion, spec.maxLibraryVersionExclusive)
         when (target) {
             is Settings -> {
-                spec.applyToSettings(target)
+                val detection = DetectionResult()
+                spec.applyToSettings(target, target.providers.provider { detection.present })
                 DevelocityBridge.detect(target, spec.legacyGradleEnterprise) { rootProject, develocity ->
-                    configureOnce(rootProject, registry, spec, develocity)
+                    detection.present = develocity != null
+                    configureOnce(rootProject, registry, spec, develocity, PluginApplication.SETTINGS)
                 }
             }
             is Project -> {
                 spec.applyToProject(target)
+                val application =
+                    if (target.path == Project.PATH_SEPARATOR) PluginApplication.ROOT_PROJECT else PluginApplication.SUBPROJECT
                 target.gradle.rootProject(
                     Action { rootProject ->
-                        configureOnce(rootProject, registry, spec, DevelocityBridge.detect(rootProject, spec.legacyGradleEnterprise))
+                        val develocity = DevelocityBridge.detect(rootProject, spec.legacyGradleEnterprise)
+                        configureOnce(rootProject, registry, spec, develocity, application)
                     },
                 )
             }
@@ -86,6 +92,7 @@ public object PluginEntry {
         registry: BuildEventsListenerRegistry,
         spec: ReportingPluginSpec<P>,
         develocity: DetectedDevelocity?,
+        application: PluginApplication,
     ) {
         @Suppress("UNCHECKED_CAST")
         val serviceType = spec.consoleServiceType as Class<ConsoleReportService<P>>
@@ -93,19 +100,26 @@ public object PluginEntry {
         val service =
             rootProject.gradle.sharedServices.registerIfAbsent(spec.serviceName, serviceType) { serviceSpec ->
                 claimed = true
-                spec.configureConsoleService(rootProject, serviceSpec.parameters)
+                spec.configureConsoleService(rootProject, serviceSpec.parameters, develocity?.access)
                 if (develocity == null || develocity.access.keepsConsole) {
                     serviceSpec.parameters.consoleEnabled.set(true)
                 } else {
-                    serviceSpec.parameters.consoleEnabled.set(spec.consoleAlongsideDevelocity(rootProject))
+                    serviceSpec.parameters.consoleEnabled.set(spec.consoleAlongsideDevelocity(rootProject, application))
                 }
             }
         if (!claimed) {
             return
         }
-        registry.onTaskCompletion(service)
+        if (spec.subscribeToTaskCompletion) {
+            registry.onTaskCompletion(service)
+        }
         if (develocity != null) {
             spec.buildScanReporter(rootProject, develocity.access)?.let { develocity.onBuildFinished(it) }
         }
+        spec.onConfigured(rootProject, service, develocity?.access)
+    }
+
+    private class DetectionResult {
+        var present = false
     }
 }

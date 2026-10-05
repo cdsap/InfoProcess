@@ -187,6 +187,51 @@ abstract class FixturePluginTestKitTest(private val gradleVersion: String) {
     }
 
     @Test
+    fun `the configure hooks see the detected access and where the configuring application was applied`() {
+        writeProject(settingsPlugins = listOf(DEVELOCITY, FIXTURE))
+        val settings = run()
+        assertEquals(listOf("FIXTURE configure access=DEVELOCITY"), linesStartingWith(settings, "FIXTURE configure access="))
+        assertEquals(listOf("FIXTURE console rule application=SETTINGS"), linesStartingWith(settings, "FIXTURE console rule"))
+        assertEquals(listOf("FIXTURE onConfigured access=DEVELOCITY present=true"), linesStartingWith(settings, "FIXTURE onConfigured"))
+
+        writeProject(settingsPlugins = listOf(DEVELOCITY), rootPlugins = listOf(FIXTURE_ALIAS))
+        val root = run()
+        assertEquals(listOf("FIXTURE console rule application=ROOT_PROJECT"), linesStartingWith(root, "FIXTURE console rule"))
+        assertEquals(listOf("FIXTURE onConfigured access=DEVELOCITY present=null"), linesStartingWith(root, "FIXTURE onConfigured"))
+
+        writeProject(settingsPlugins = listOf(DEVELOCITY), subprojectPlugins = listOf(FIXTURE_ALIAS))
+        val sub = run()
+        assertEquals(listOf("FIXTURE console rule application=SUBPROJECT"), linesStartingWith(sub, "FIXTURE console rule"))
+    }
+
+    @Test
+    fun `the settings presence provider is decided after the settings script`() {
+        writeProject(settingsPlugins = listOf(FIXTURE, DEVELOCITY))
+        val withDevelocity = run()
+        assertTrue(withDevelocity.output.contains("present-at-apply=false"), withDevelocity.output)
+        assertEquals(listOf("FIXTURE onConfigured access=DEVELOCITY present=true"), linesStartingWith(withDevelocity, "FIXTURE onConfigured"))
+
+        writeProject(settingsPlugins = listOf(FIXTURE))
+        val without = run()
+        assertEquals(listOf("FIXTURE configure access=null"), linesStartingWith(without, "FIXTURE configure access="))
+        assertEquals(emptyList(), linesStartingWith(without, "FIXTURE console rule"), "the rule is only read with Develocity")
+        assertEquals(listOf("FIXTURE onConfigured access=null present=false"), linesStartingWith(without, "FIXTURE onConfigured"))
+    }
+
+    @Test
+    fun `without the task completion subscription the console service only runs when a task uses it`() {
+        writeProject(settingsPlugins = listOf(FIXTURE), properties = mapOf("fixture.subscribe" to "false", "fixture.taskUsesService" to "true"))
+
+        val unused = run()
+        assertConfiguredOnce(unused)
+        assertEquals(emptyList(), consoleLines(unused))
+
+        val used = runner().withArguments("usesFixtureService", "--stacktrace").build()
+        assertTrue(used.output.contains("FIXTURE task ran"), used.output)
+        assertEquals(listOf(CONSOLE_LINE), consoleLines(used))
+    }
+
+    @Test
     fun `an incompatible library version fails the build with the guard message`() {
         writeProject(settingsPlugins = listOf(FIXTURE), properties = mapOf("fixture.minLibraryVersion" to "0.2.0"))
 
@@ -251,7 +296,9 @@ abstract class FixturePluginTestKitTest(private val gradleVersion: String) {
     private fun consoleLines(result: BuildResult) = result.output.lines().filter { it.startsWith("FIXTURE-CONSOLE") }
 
     private fun daemonPid(result: BuildResult): String =
-        result.output.lines().first { it.startsWith("FIXTURE applied to settings daemon=") }.substringAfter("daemon=")
+        result.output.lines().first { it.startsWith("FIXTURE applied to settings daemon=") }.substringAfter("daemon=").substringBefore(" ")
+
+    private fun linesStartingWith(result: BuildResult, prefix: String) = result.output.lines().filter { it.startsWith(prefix) }
 
     private fun scanLines(access: String) =
         listOf("SCAN-VALUE fixture.value=$VALUE", "SCAN-VALUE fixture.access=$access", "SCAN-TAG fixture")

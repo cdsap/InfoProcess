@@ -44,6 +44,9 @@ public object FakeDevelocity {
     /** Printed by [FakeGradleEnterprisePlugin] when it is applied. */
     public const val LEGACY_APPLIED_MARKER: String = "FAKE-GRADLE-ENTERPRISE applied"
 
+    /** Gradle property that, set to `true`, stops the fakes printing [APPLIED_MARKER] and [LEGACY_APPLIED_MARKER]. */
+    public const val QUIET_PROPERTY: String = "plugintest.fakeDevelocity.quiet"
+
     /** Prefix of the line printed for each Build Scan custom value: `SCAN-VALUE <name>=<value>`. */
     public const val SCAN_VALUE_PREFIX: String = "SCAN-VALUE "
 

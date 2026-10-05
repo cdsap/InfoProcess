@@ -27,7 +27,8 @@ import javax.inject.Inject
  * Test plugin shaped like the migrated InfoGradleProcess / InfoKotlinProcess: the version guard, then `PluginEntry`
  * with a spec whose console service and reporter come from jvm-process-report.
  *
- * Gradle properties: `processReportFixture.spec` (`gradle` or `kotlin`), `processReportFixture.gbos` (GBOS opt-in).
+ * Gradle properties: `processReportFixture.spec` (`gradle` or `kotlin`), `processReportFixture.gbos` (GBOS opt-in),
+ * `processReportFixture.consoleWithDevelocity` (console rule).
  * It also registers two probe tasks on the root project:
  * - `probeValueSources` prints `PROBE <name>=[<escaped output>]` for the spec's jstat/jinfo value sources and for an
  *   empty and a failing command.
@@ -63,13 +64,12 @@ class ProcessReportFixtureSpec(private val providers: ProviderFactory) : Reporti
 
     override fun configureConsoleService(rootProject: Project, parameters: ProcessConsoleService.Params) {
         val spec = spec
-        parameters.spec.set(spec)
-        parameters.jStat.set(ProcessReport.jStat(rootProject.providers, spec))
-        parameters.jInfo.set(ProcessReport.jInfo(rootProject.providers, spec))
+        ProcessReport.configureConsoleService(parameters, rootProject.providers, spec)
         registerProbes(rootProject, spec)
     }
 
-    override fun consoleAlongsideDevelocity(rootProject: Project): Provider<Boolean> = rootProject.providers.provider { false }
+    override fun consoleAlongsideDevelocity(rootProject: Project): Provider<Boolean> =
+        rootProject.providers.gradleProperty("processReportFixture.consoleWithDevelocity").map(String::toBoolean).orElse(false)
 
     override fun buildScanReporter(rootProject: Project, access: DevelocityAccess): BuildScanReporter = reporter(rootProject, spec)
 

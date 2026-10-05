@@ -4,6 +4,7 @@ import io.github.cdsap.pluginsupport.BooleanOptIn
 import io.github.cdsap.pluginsupport.BuildScanReporter
 import io.github.cdsap.pluginsupport.ConsoleReportService
 import io.github.cdsap.pluginsupport.DevelocityAccess
+import io.github.cdsap.pluginsupport.PluginApplication
 import io.github.cdsap.pluginsupport.PluginEntry
 import io.github.cdsap.pluginsupport.PluginSupportVersion
 import io.github.cdsap.pluginsupport.ReportingPluginSpec
@@ -24,7 +25,8 @@ import javax.inject.Inject
  *
  * Gradle properties: `fixture.value` (reported value), `fixture.minLibraryVersion` (guard range),
  * `fixture.legacyGradleEnterprise` (legacy lookup opt-in), `fixture.consoleWithDevelocity` (console rule; DSL
- * `fixtureReport { consoleWithDevelocity = ... }` wins).
+ * `fixtureReport { consoleWithDevelocity = ... }` wins), `fixture.subscribe` (task completion subscription),
+ * `fixture.taskUsesService` (registers `usesFixtureService`, a task that declares the console service).
  */
 abstract class FixturePlugin
     @Inject
@@ -83,9 +85,14 @@ class FixtureSpec(private val providers: ProviderFactory) : ReportingPluginSpec<
     override val consoleServiceType: Class<FixtureConsoleService> get() = FixtureConsoleService::class.java
     override val legacyGradleEnterprise: Boolean
         get() = BooleanOptIn.gradleProperty(providers, "fixture.legacyGradleEnterprise").getOrElse(false)
+    override val subscribeToTaskCompletion: Boolean
+        get() = BooleanOptIn.gradleProperty(providers, "fixture.subscribe").getOrElse(true)
 
-    override fun applyToSettings(settings: Settings) {
-        println("FIXTURE applied to settings daemon=${ProcessHandle.current().pid()}")
+    private var develocityPresent: Provider<Boolean>? = null
+
+    override fun applyToSettings(settings: Settings, develocityPresent: Provider<Boolean>) {
+        println("FIXTURE applied to settings daemon=${ProcessHandle.current().pid()} present-at-apply=${develocityPresent.get()}")
+        this.develocityPresent = develocityPresent
         extension = createExtension(settings)
     }
 
@@ -94,16 +101,41 @@ class FixtureSpec(private val providers: ProviderFactory) : ReportingPluginSpec<
         extension = createExtension(project)
     }
 
-    override fun configureConsoleService(rootProject: Project, parameters: FixtureConsoleService.Params) {
+    override fun configureConsoleService(
+        rootProject: Project,
+        parameters: FixtureConsoleService.Params,
+        develocity: DevelocityAccess?,
+    ) {
         println("FIXTURE configured from '${rootProject.path}'")
+        println("FIXTURE configure access=$develocity")
         parameters.value.set(reportedValue())
     }
 
-    override fun consoleAlongsideDevelocity(rootProject: Project): Provider<Boolean> = checkNotNull(extension).consoleWithDevelocity
+    override fun consoleAlongsideDevelocity(rootProject: Project, application: PluginApplication): Provider<Boolean> {
+        println("FIXTURE console rule application=$application")
+        return checkNotNull(extension).consoleWithDevelocity
+    }
 
     override fun buildScanReporter(rootProject: Project, access: DevelocityAccess): BuildScanReporter {
         println("FIXTURE reporter registered access=$access")
         return reporter(reportedValue(), access.toString())
+    }
+
+    override fun onConfigured(
+        rootProject: Project,
+        service: Provider<out ConsoleReportService<FixtureConsoleService.Params>>,
+        develocity: DevelocityAccess?,
+    ) {
+        println("FIXTURE onConfigured access=$develocity present=${develocityPresent?.get()}")
+        if (BooleanOptIn.gradleProperty(providers, "fixture.taskUsesService").getOrElse(false)) {
+            rootProject.tasks.register("usesFixtureService") { task ->
+                task.usesService(service)
+                task.doLast {
+                    service.get()
+                    println("FIXTURE task ran")
+                }
+            }
+        }
     }
 
     private fun reportedValue(): Provider<String> = providers.gradleProperty("fixture.value").orElse("default-value")

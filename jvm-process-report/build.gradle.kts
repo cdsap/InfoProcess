@@ -20,6 +20,9 @@ dependencies {
 
     testImplementation(gradleApi())
     testImplementation(gradleTestKit())
+    testImplementation(project(":plugin-test-fixtures"))
+    // The plugin-test-fixtures fakes implement its API interfaces (FakeDevelocity.develocityApiJar).
+    testImplementation(libs.develocity.testApi)
 }
 
 // Classpath injected into TestKit builds with GradleRunner.withPluginClasspath; test resources hold the fixture

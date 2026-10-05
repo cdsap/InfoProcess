@@ -9,6 +9,7 @@ import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension
 import com.gradle.scan.plugin.BuildScanExtension
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
+import org.gradle.api.IsolatedAction
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.initialization.Settings
@@ -22,6 +23,7 @@ import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
+import org.gradle.util.GradleVersion
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
@@ -44,12 +46,15 @@ import javax.inject.Inject
  * Other members return defaults (`Property` instances, nested proxies, `false`), so settings scripts can configure
  * `develocity { server = "..."; buildScan { publishing.onlyIf { false } } }` as they would the real extension.
  *
- * The end-of-build replay finalizes every task from `gradle.allprojects {}`, so the fake does not support Isolated
- * Projects. The `com.gradle.develocity.agent.gradle` API must be loadable from this class's classloader.
+ * The end-of-build replay finalizes every task with a root project task. On Gradle 8.8 and later it is wired from
+ * `gradle.lifecycle.beforeProject`, so the fake works with Isolated Projects; on older versions from
+ * `gradle.allprojects {}`. Set the Gradle property [FakeDevelocity.QUIET_PROPERTY] to `true` to skip the
+ * [FakeDevelocity.APPLIED_MARKER] line. The `com.gradle.develocity.agent.gradle` API must be loadable from this
+ * class's classloader.
  */
 public abstract class FakeDevelocityPlugin @Inject constructor(private val objects: ObjectFactory) : Plugin<Settings> {
     override fun apply(settings: Settings) {
-        println(FakeDevelocity.APPLIED_MARKER)
+        if (!FakeBuildFinishedWiring.quiet(settings)) println(FakeDevelocity.APPLIED_MARKER)
         val finishedActions = mutableListOf<Any>()
         val buildScan = FakeProxies.create(BuildScanConfiguration::class.java, objects, BuildScanBehaviour(finishedActions))
         val develocity = FakeProxies.create(DevelocityConfiguration::class.java, objects, ConfigurationBehaviour(buildScan))
@@ -70,7 +75,7 @@ public abstract class FakeDevelocityPlugin @Inject constructor(private val objec
  */
 public abstract class FakeGradleEnterprisePlugin @Inject constructor(private val objects: ObjectFactory) : Plugin<Settings> {
     override fun apply(settings: Settings) {
-        println(FakeDevelocity.LEGACY_APPLIED_MARKER)
+        if (!FakeBuildFinishedWiring.quiet(settings)) println(FakeDevelocity.LEGACY_APPLIED_MARKER)
         val finishedActions = mutableListOf<Any>()
         val buildScan = FakeProxies.create(BuildScanExtension::class.java, objects, BuildScanBehaviour(finishedActions))
         val gradleEnterprise = FakeProxies.create(GradleEnterpriseExtension::class.java, objects, ConfigurationBehaviour(buildScan))
@@ -88,24 +93,47 @@ internal object FakeBuildFinishedWiring {
     private const val SERVICE_NAME = "zzzFakeDevelocityBuildFinished"
     private const val HANDOFF_TASK_NAME = "fakeDevelocityBuildFinished"
 
+    private const val HANDOFF_TASK_PATH = ":$HANDOFF_TASK_NAME"
+
+    fun quiet(settings: Settings): Boolean = settings.providers.gradleProperty(FakeDevelocity.QUIET_PROPERTY).orNull == "true"
+
     fun install(settings: Settings, finishedActions: List<Any>) {
         val service = settings.gradle.sharedServices.registerIfAbsent(SERVICE_NAME, FakeBuildFinishedService::class.java) {}
-        settings.gradle.projectsEvaluated(
-            Action<Gradle> { gradle ->
-                val root = gradle.rootProject
-                val handoff =
-                    root.tasks.register(HANDOFF_TASK_NAME, FakeBuildFinishedHandoff::class.java) { task ->
-                        task.usesService(service)
-                        task.service.set(service)
-                        task.finishedActions = finishedActions
-                    }
-                gradle.allprojects { project ->
-                    project.tasks.configureEach { task ->
-                        if (!(project == root && task.name == HANDOFF_TASK_NAME)) task.finalizedBy(handoff)
-                    }
+        settings.gradle.rootProject(
+            Action<Project> { root ->
+                root.tasks.register(HANDOFF_TASK_NAME, FakeBuildFinishedHandoff::class.java) { task ->
+                    task.usesService(service)
+                    task.service.set(service)
+                    task.finishedActions = finishedActions
                 }
             },
         )
+        if (GradleVersion.current().baseVersion >= GradleVersion.version("8.8")) {
+            LifecycleFinalizer.install(settings.gradle)
+        } else {
+            settings.gradle.allprojects(Action<Project> { finalizeTasks(it) })
+        }
+    }
+
+    fun finalizeTasks(project: Project) {
+        val isRoot = project.path == Project.PATH_SEPARATOR
+        project.tasks.configureEach { task ->
+            if (!(isRoot && task.name == HANDOFF_TASK_NAME)) task.finalizedBy(HANDOFF_TASK_PATH)
+        }
+    }
+}
+
+// Only loaded on Gradle 8.8 and later, where gradle.lifecycle exists.
+internal object LifecycleFinalizer {
+    fun install(gradle: Gradle) {
+        gradle.lifecycle.beforeProject(FinalizeTasksAction())
+    }
+}
+
+// A class rather than a lambda: Gradle isolates lifecycle actions by serializing them.
+internal class FinalizeTasksAction : IsolatedAction<Project> {
+    override fun execute(project: Project) {
+        FakeBuildFinishedWiring.finalizeTasks(project)
     }
 }
 
