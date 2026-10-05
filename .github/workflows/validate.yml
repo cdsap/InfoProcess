@@ -45,6 +45,37 @@ jobs:
       - name: Run checks, ABI validation and plugin validation
         run: ./gradlew check :plugin:validatePlugins :build-logic:check
 
+  # Combined-plugins suite (integration-tests) on each supported Gradle lane. It needs
+  # io.github.cdsap:build-observability-core:0.0.7 on Maven Central, like every module here (docs/releasing.md).
+  integration:
+    name: Combined plugins / Gradle ${{ matrix.gradle }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: check
+    strategy:
+      fail-fast: false
+      matrix:
+        gradle: ['8.2', '8.14.3', '9.7.1']
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v6
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Run the combined-plugins suite on Gradle ${{ matrix.gradle }}
+        run: ./gradlew :integration-tests:test -Dintegration.gradleVersion=${{ matrix.gradle }}
+
   configuration-cache:
     name: Configuration cache reuse
     runs-on: ubuntu-latest

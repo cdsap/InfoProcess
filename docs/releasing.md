@@ -88,6 +88,9 @@ removed or changed declarations are breaking changes.
    - Run `./gradlew updateKotlinAbi` and confirm no `api/` file changes; any
      change means the ABI was not recorded with the code change that caused it.
    - Run `./gradlew check`.
+   - Run the combined-plugins suite on each Gradle lane, as CI does:
+     `./gradlew :integration-tests:test -Dintegration.gradleVersion=<8.2|8.14.3|9.7.1>`.
+     It publishes the libraries and the fixture plugins to `integration-tests/build/local-repo` first.
 2. Merge the release-preparation change to `main` and release from a clean
    checkout of that commit.
 3. Configure the Central Portal credentials and signing key locally (see
