@@ -1,4 +1,5 @@
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         gradlePluginPortal()
         mavenCentral()
@@ -12,4 +13,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "InfoProcess"
 include("core", "collector-gradle", "collector-kotlin", "collector-test", "collector-gc", "plugin", "integration-tests")
-

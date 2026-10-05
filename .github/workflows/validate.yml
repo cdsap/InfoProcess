@@ -41,8 +41,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Run checks and plugin validation
-        run: ./gradlew check :plugin:validatePlugins
+      # check includes checkKotlinAbi and verifyJavaTargetMetadata for shared library modules.
+      - name: Run checks, ABI validation and plugin validation
+        run: ./gradlew check :plugin:validatePlugins :build-logic:check
 
   configuration-cache:
     name: Configuration cache reuse
