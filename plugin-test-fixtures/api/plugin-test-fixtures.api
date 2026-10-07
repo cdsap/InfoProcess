@@ -1,0 +1,90 @@
+public final class io/github/cdsap/plugintest/BuildScript {
+	public fun <init> ()V
+	public final fun append (Ljava/lang/String;)Lio/github/cdsap/plugintest/BuildScript;
+	public final fun buildscriptClasspath (Ljava/lang/String;)Lio/github/cdsap/plugintest/BuildScript;
+	public final fun localMavenRepository (Ljava/io/File;)Lio/github/cdsap/plugintest/BuildScript;
+	public final fun plugin (Ljava/lang/String;Ljava/lang/String;)Lio/github/cdsap/plugintest/BuildScript;
+	public static synthetic fun plugin$default (Lio/github/cdsap/plugintest/BuildScript;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/cdsap/plugintest/BuildScript;
+	public final fun render ()Ljava/lang/String;
+	public final fun writeTo (Ljava/io/File;)Ljava/io/File;
+}
+
+public final class io/github/cdsap/plugintest/ConfigurationCache {
+	public static final field INSTANCE Lio/github/cdsap/plugintest/ConfigurationCache;
+	public static final field REUSED Ljava/lang/String;
+	public static final field STORED Ljava/lang/String;
+	public final fun storeAndReuse (Lorg/gradle/testkit/runner/GradleRunner;[Ljava/lang/String;)Lio/github/cdsap/plugintest/ConfigurationCacheRuns;
+}
+
+public final class io/github/cdsap/plugintest/ConfigurationCacheRuns {
+	public final fun getReuse ()Lorg/gradle/testkit/runner/BuildResult;
+	public final fun getStore ()Lorg/gradle/testkit/runner/BuildResult;
+}
+
+public final class io/github/cdsap/plugintest/FakeDevelocity {
+	public static final field APPLIED_MARKER Ljava/lang/String;
+	public static final field INSTANCE Lio/github/cdsap/plugintest/FakeDevelocity;
+	public static final field LEGACY_APPLIED_MARKER Ljava/lang/String;
+	public static final field LEGACY_PLUGIN_ID Ljava/lang/String;
+	public static final field PLUGIN_ID Ljava/lang/String;
+	public static final field QUIET_PROPERTY Ljava/lang/String;
+	public static final field SCAN_TAG_PREFIX Ljava/lang/String;
+	public static final field SCAN_VALUE_PREFIX Ljava/lang/String;
+	public final fun develocityApiJar (Ljava/io/File;)Ljava/io/File;
+	public final fun scanTags (Ljava/lang/String;)Ljava/util/List;
+	public final fun scanValues (Ljava/lang/String;)Ljava/util/List;
+	public final fun writeInitScript (Ljava/io/File;Ljava/io/File;)Ljava/io/File;
+}
+
+public abstract class io/github/cdsap/plugintest/FakeDevelocityPlugin : org/gradle/api/Plugin {
+	public fun <init> (Lorg/gradle/api/model/ObjectFactory;)V
+	public synthetic fun apply (Ljava/lang/Object;)V
+	public fun apply (Lorg/gradle/api/initialization/Settings;)V
+}
+
+public abstract class io/github/cdsap/plugintest/FakeGradleEnterprisePlugin : org/gradle/api/Plugin {
+	public fun <init> (Lorg/gradle/api/model/ObjectFactory;)V
+	public synthetic fun apply (Ljava/lang/Object;)V
+	public fun apply (Lorg/gradle/api/initialization/Settings;)V
+}
+
+public final class io/github/cdsap/plugintest/IsolatedProjects {
+	public static final field INSTANCE Lio/github/cdsap/plugintest/IsolatedProjects;
+	public static final field PROPERTY Ljava/lang/String;
+	public final fun storeAndReuse (Lorg/gradle/testkit/runner/GradleRunner;[Ljava/lang/String;)Lio/github/cdsap/plugintest/ConfigurationCacheRuns;
+}
+
+public final class io/github/cdsap/plugintest/PluginSupportJar {
+	public static final field INSTANCE Lio/github/cdsap/plugintest/PluginSupportJar;
+	public static final field VERSION_RESOURCE Ljava/lang/String;
+	public final fun isPluginSupportJar (Ljava/io/File;)Z
+	public final fun replaceIn (Ljava/util/List;Ljava/lang/String;Ljava/io/File;)Ljava/util/List;
+	public final fun reversioned (Ljava/io/File;Ljava/lang/String;Ljava/io/File;)Ljava/io/File;
+}
+
+public final class io/github/cdsap/plugintest/PluginUnderTest {
+	public static final field INSTANCE Lio/github/cdsap/plugintest/PluginUnderTest;
+	public static final field METADATA_RESOURCE Ljava/lang/String;
+	public final fun classpath ()Ljava/util/List;
+	public final fun classpath (Ljava/lang/ClassLoader;)Ljava/util/List;
+	public static synthetic fun classpath$default (Lio/github/cdsap/plugintest/PluginUnderTest;Ljava/lang/ClassLoader;ILjava/lang/Object;)Ljava/util/List;
+	public final fun isRealDevelocityPlugin (Ljava/io/File;)Z
+	public final fun withFakeDevelocity (Ljava/io/File;)Ljava/util/List;
+	public final fun withFakeDevelocity (Ljava/io/File;Ljava/util/List;)Ljava/util/List;
+	public static synthetic fun withFakeDevelocity$default (Lio/github/cdsap/plugintest/PluginUnderTest;Ljava/io/File;Ljava/util/List;ILjava/lang/Object;)Ljava/util/List;
+}
+
+public final class io/github/cdsap/plugintest/SettingsScript {
+	public fun <init> ()V
+	public final fun append (Ljava/lang/String;)Lio/github/cdsap/plugintest/SettingsScript;
+	public final fun buildscriptClasspath (Ljava/lang/String;)Lio/github/cdsap/plugintest/SettingsScript;
+	public final fun fakeDevelocity (Ljava/lang/String;Ljava/io/File;)Lio/github/cdsap/plugintest/SettingsScript;
+	public final fun include ([Ljava/lang/String;)Lio/github/cdsap/plugintest/SettingsScript;
+	public final fun localMavenRepository (Ljava/io/File;)Lio/github/cdsap/plugintest/SettingsScript;
+	public final fun plugin (Ljava/lang/String;Ljava/lang/String;)Lio/github/cdsap/plugintest/SettingsScript;
+	public static synthetic fun plugin$default (Lio/github/cdsap/plugintest/SettingsScript;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lio/github/cdsap/plugintest/SettingsScript;
+	public final fun render ()Ljava/lang/String;
+	public final fun rootProjectName (Ljava/lang/String;)Lio/github/cdsap/plugintest/SettingsScript;
+	public final fun writeTo (Ljava/io/File;)Ljava/io/File;
+}
+

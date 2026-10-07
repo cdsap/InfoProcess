@@ -1,0 +1,26 @@
+[versions]
+kotlin = "2.4.20"
+junit = "4.13.2"
+mavenPublish = "0.37.0"
+develocityAdapters = "1.2.1"
+# Test-only: the last line that ships both DevelocityConfiguration and the legacy GradleEnterpriseExtension API.
+develocityTestApi = "3.19.2"
+# Same versions InfoGradleProcess and InfoKotlinProcess use today.
+jdkToolsParser = "0.1.1"
+picnic = "0.7.0"
+# 0.0.7 adds the GbosDevelocity publisher; until it is on Maven Central, build with -PgbosCoreBuild (see docs/releasing.md).
+buildObservabilityCore = "0.0.7"
+
+[libraries]
+junit = { module = "junit:junit", version.ref = "junit" }
+kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+mavenPublish-gradlePlugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "mavenPublish" }
+develocity-adapters = { module = "com.gradle:develocity-gradle-plugin-adapters", version.ref = "develocityAdapters" }
+develocity-testApi = { module = "com.gradle:develocity-gradle-plugin", version.ref = "develocityTestApi" }
+cdsap-jdkToolsParser = { module = "io.github.cdsap:jdk-tools-parser", version.ref = "jdkToolsParser" }
+picnic = { module = "com.jakewharton.picnic:picnic", version.ref = "picnic" }
+build-observability-core = { module = "io.github.cdsap:build-observability-core", version.ref = "buildObservabilityCore" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }

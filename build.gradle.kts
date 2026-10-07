@@ -1,5 +1,6 @@
 plugins {
-    kotlin("jvm") version "2.0.21" apply false
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.vanniktech.mavenPublish) apply false
 }
 
 group = "io.github.cdsap"
@@ -15,11 +16,10 @@ subprojects {
         }
         dependencies {
             "testImplementation"(kotlin("test"))
-            "testImplementation"("junit:junit:4.13.2")
+            "testImplementation"(rootProject.libs.junit)
         }
         tasks.withType<Test>().configureEach {
             useJUnitPlatform()
         }
     }
 }
-

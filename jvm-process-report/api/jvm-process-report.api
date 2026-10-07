@@ -1,0 +1,39 @@
+public final class io/github/cdsap/processreport/GbosProducerSpec : java/io/Serializable {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun getProcessRole ()Ljava/lang/String;
+	public final fun getProducerName ()Ljava/lang/String;
+	public final fun getProducerVersion ()Ljava/lang/String;
+	public final fun getSchemaVersion ()Ljava/lang/String;
+}
+
+public abstract class io/github/cdsap/processreport/ProcessConsoleService : io/github/cdsap/pluginsupport/ConsoleReportService {
+	public fun <init> ()V
+	protected fun report ()V
+}
+
+public abstract interface class io/github/cdsap/processreport/ProcessConsoleService$Params : io/github/cdsap/pluginsupport/ConsoleReportService$Parameters {
+	public abstract fun getJInfo ()Lorg/gradle/api/provider/Property;
+	public abstract fun getJStat ()Lorg/gradle/api/provider/Property;
+	public abstract fun getSpec ()Lorg/gradle/api/provider/Property;
+}
+
+public final class io/github/cdsap/processreport/ProcessReport {
+	public static final field INSTANCE Lio/github/cdsap/processreport/ProcessReport;
+	public final fun buildScanReporter (Lio/github/cdsap/processreport/ProcessReportSpec;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;)Lio/github/cdsap/pluginsupport/BuildScanReporter;
+	public final fun collect (Lio/github/cdsap/processreport/ProcessReportSpec;Ljava/lang/String;Ljava/lang/String;)Ljava/util/List;
+	public final fun configureConsoleService (Lio/github/cdsap/processreport/ProcessConsoleService$Params;Lorg/gradle/api/provider/ProviderFactory;Lio/github/cdsap/processreport/ProcessReportSpec;)V
+	public final fun consoleTable (Lio/github/cdsap/processreport/ProcessReportSpec;Ljava/util/List;)Ljava/lang/String;
+	public final fun jInfo (Lorg/gradle/api/provider/ProviderFactory;Lio/github/cdsap/processreport/ProcessReportSpec;)Lorg/gradle/api/provider/Provider;
+	public final fun jStat (Lorg/gradle/api/provider/ProviderFactory;Lio/github/cdsap/processreport/ProcessReportSpec;)Lorg/gradle/api/provider/Provider;
+	public final fun writeBuildScanValues (Lio/github/cdsap/processreport/ProcessReportSpec;Ljava/util/List;ZLio/github/cdsap/pluginsupport/BuildScanSink;)V
+}
+
+public final class io/github/cdsap/processreport/ProcessReportSpec : java/io/Serializable {
+	public fun <init> (Ljava/lang/String;Lio/github/cdsap/jdk/tools/parser/model/TypeProcess;Ljava/lang/String;Ljava/lang/String;Lio/github/cdsap/processreport/GbosProducerSpec;)V
+	public final fun getConsoleTitle ()Ljava/lang/String;
+	public final fun getGbos ()Lio/github/cdsap/processreport/GbosProducerSpec;
+	public final fun getKeyPrefix ()Ljava/lang/String;
+	public final fun getProcessName ()Ljava/lang/String;
+	public final fun getTypeProcess ()Lio/github/cdsap/jdk/tools/parser/model/TypeProcess;
+}
+
