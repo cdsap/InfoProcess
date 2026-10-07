@@ -32,18 +32,16 @@ Maven Central versions are immutable; publish a new version when a released
 artifact needs correction. All shared library modules are released together
 with the same version.
 
-## build-observability-core 0.0.7
+## build-observability-core
 
-`jvm-process-report` depends on `io.github.cdsap:build-observability-core:0.0.7`,
-the first core version with the `GbosDevelocity` publisher. Until 0.0.7 is on
-Maven Central, the build cannot resolve it: every build that configures
-`:jvm-process-report` dependencies (including `./gradlew check` locally and in
-CI) fails with "Could not find io.github.cdsap:build-observability-core:0.0.7".
+`jvm-process-report` depends on `io.github.cdsap:build-observability-core:0.0.7`
+from Maven Central, the first core version with the `GbosDevelocity` publisher.
 
-For local work, point the `gbosCoreBuild` Gradle property at a checkout of
-[build-observability-schema](https://github.com/cdsap/build-observability-schema)
-that contains the publisher. `settings.gradle.kts` then includes that build and
-substitutes its `:core` project for the Maven Central module:
+To develop against unreleased core changes, point the `gbosCoreBuild` Gradle
+property at a checkout of
+[build-observability-schema](https://github.com/cdsap/build-observability-schema).
+`settings.gradle.kts` then includes that build and substitutes its `:core`
+project for the Maven Central module:
 
 ```bash
 ./gradlew check -PgbosCoreBuild=../build-observability-schema
@@ -54,14 +52,10 @@ example `gbosCoreBuild=/path/to/build-observability-schema` in
 `~/.gradle/gradle.properties`. Never commit the property to this repository's
 `gradle.properties`: CI and releases must resolve the published core.
 
-Release order:
-
-1. Release build-observability-core 0.0.7 to Maven Central and wait until it
-   resolves from Central (`--refresh-dependencies`, no `-PgbosCoreBuild`).
-2. Only then can CI build without the property, and only then may the shared
-   libraries be released: their POMs reference core 0.0.7, so a shared-library
-   release before core 0.0.7 is on Central would publish unresolvable artifacts.
-   Run the release-preparation `./gradlew check` without `-PgbosCoreBuild`.
+When the libraries move to a new core version, release that core version to
+Maven Central first and confirm it resolves (`--refresh-dependencies`, no
+`-PgbosCoreBuild`). The library POMs reference the core version, so releasing
+them before core is on Central would publish unresolvable artifacts.
 
 ## ABI dumps
 

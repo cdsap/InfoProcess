@@ -8,7 +8,7 @@ develocityTestApi = "3.19.2"
 # Same versions InfoGradleProcess and InfoKotlinProcess use today.
 jdkToolsParser = "0.1.1"
 picnic = "0.7.0"
-# 0.0.7 adds the GbosDevelocity publisher; until it is on Maven Central, build with -PgbosCoreBuild (see docs/releasing.md).
+# 0.0.7 is the first version with the GbosDevelocity publisher.
 buildObservabilityCore = "0.0.7"
 
 [libraries]

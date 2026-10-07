@@ -72,7 +72,7 @@ With GBOS enabled, the GBOS values replace the legacy ones. The header is writte
 `.name` before `.version`, and wrote whole numbers in observations as `15.0` where the library writes `15`; parsed
 observations are otherwise identical.
 
-The library depends on `build-observability-core` 0.0.7. Until that version is on Maven Central, build with
-`-PgbosCoreBuild=../build-observability-schema`; see [docs/releasing.md](../docs/releasing.md).
+The library depends on `build-observability-core` 0.0.7 from Maven Central. To build against a local checkout of
+core instead, pass `-PgbosCoreBuild=../build-observability-schema`; see [docs/releasing.md](../docs/releasing.md).
 
 Public ABI changes must be recorded with `./gradlew :jvm-process-report:updateKotlinAbi`.
