@@ -218,8 +218,8 @@ for (library in listOf("plugin-support", "jvm-process-report", "plugin-test-fixt
 fun libraryJar(library: String, version: String): Provider<RegularFile> =
     libraryModules.getValue(library to version).flatMap { it.moduleDirectory.file("$library-$version.jar") }
 
-// Until build-observability-core 0.0.7 is on Maven Central, -PgbosCoreBuild substitutes a local checkout; the TestKit
-// builds then resolve core from the local repository too.
+// When -PgbosCoreBuild substitutes a local checkout of build-observability-core, the TestKit builds resolve core from
+// the local repository too.
 if (providers.gradleProperty("gbosCoreBuild").isPresent) {
     val gbosCore = runtimeArtifacts("gbosCore", transitive = true, libs.build.observability.core)
     localMavenModule("io.github.cdsap", "build-observability-core", libs.versions.buildObservabilityCore.get()) {
