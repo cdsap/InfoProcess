@@ -61,7 +61,7 @@ class KotlinProcessSpec : ReportingPluginSpec<ProcessConsoleService.Params>() {
             KOTLIN_PROCESSES,
             ProcessReport.jStat(rootProject.providers, KOTLIN_PROCESSES),
             ProcessReport.jInfo(rootProject.providers, KOTLIN_PROCESSES),
-            // The plugin keeps its own opt-in: infoKotlinProcess.gbos.develocity.enabled and its DSL.
+            // The plugin keeps its own opt-in: infoKotlinProcess.gbos.enabled and its DSL.
             gbosEnabled(rootProject),
         )
 }

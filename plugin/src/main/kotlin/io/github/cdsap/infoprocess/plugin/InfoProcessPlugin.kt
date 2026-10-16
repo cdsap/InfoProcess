@@ -27,9 +27,7 @@ class InfoProcessPlugin : Plugin<Settings> {
         extension.gcReport.histogram.bucket.convention(GcHistogramBucket.FREEDMAN_DIACONIS)
         extension.reporting.console.enabled.convention(true)
         extension.reporting.develocity.enabled.convention(false)
-        extension.reporting.gbos.develocity.enabled.convention(false)
-        extension.reporting.gbos.json.enabled.convention(false)
-        extension.reporting.gbos.ndjson.enabled.convention(false)
+        extension.reporting.gbos.enabled.conventionFromBooleanProperty("infoProcess.gbos.enabled", properties, false)
         extension.reporting.outputDirectory.convention(settings.layout.settingsDirectory.dir("build/reports/info-process"))
     }
 

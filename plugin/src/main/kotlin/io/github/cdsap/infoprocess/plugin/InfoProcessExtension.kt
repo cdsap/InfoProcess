@@ -52,22 +52,12 @@ abstract class ReportingExtension @Inject constructor(objects: ObjectFactory) {
     abstract val outputDirectory: DirectoryProperty
     val console: ToggleExtension = objects.newInstance(ToggleExtension::class.java)
     val develocity: ToggleExtension = objects.newInstance(ToggleExtension::class.java)
-    val gbos: GbosReportingExtension = objects.newInstance(GbosReportingExtension::class.java)
+    val gbos: ToggleExtension = objects.newInstance(ToggleExtension::class.java)
 
     fun console(action: Action<in ToggleExtension>) = action.execute(console)
     fun develocity(action: Action<in ToggleExtension>) = action.execute(develocity)
-    fun gbos(action: Action<in GbosReportingExtension>) = action.execute(gbos)
+    fun gbos(action: Action<in ToggleExtension>) = action.execute(gbos)
 }
 
 abstract class ToggleExtension { @get:Input abstract val enabled: Property<Boolean> }
-
-abstract class GbosReportingExtension @Inject constructor(objects: ObjectFactory) {
-    val develocity: ToggleExtension = objects.newInstance(ToggleExtension::class.java)
-    val json: ToggleExtension = objects.newInstance(ToggleExtension::class.java)
-    val ndjson: ToggleExtension = objects.newInstance(ToggleExtension::class.java)
-
-    fun develocity(action: Action<in ToggleExtension>) = action.execute(develocity)
-    fun json(action: Action<in ToggleExtension>) = action.execute(json)
-    fun ndjson(action: Action<in ToggleExtension>) = action.execute(ndjson)
-}
 
